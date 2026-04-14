@@ -347,7 +347,7 @@ export default function BillingPage() {
           </button>
           <button onClick={()=>setManualMode(m=>!m)}
             className={`px-3 py-1 rounded text-xs font-semibold border transition-all ${manualMode?'bg-orange-500 text-white border-orange-500':'bg-white text-orange-600 border-orange-300 hover:bg-orange-50'}`}>
-            ✏️ Manual Entry
+            ✏️ Manual Entry 1
           </button>
           <div className="relative ml-auto">
             {customer?(
