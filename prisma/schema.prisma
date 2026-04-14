@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id           String     @id @default(cuid())
+  barcode      String     @unique
+  name         String
+  category     String
+  size         String?
+  color        String?
+  costPrice    Float      @default(0)
+  purchaseRate Float      @default(0)
+  mrp          Float
+  salePrice    Float
+  gstRate      Float      @default(0)
+  stock        Int        @default(0)
+  unit         String     @default("PCS")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  billItems    BillItem[]
+  returnItems  ReturnItem[]
+  @@index([barcode])
+  @@index([category])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  email     String?
+  address   String?
+  gstNumber String?
+  hasGst    Boolean  @default(false)
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  bills     Bill[]
+}
+
+model Bill {
+  id            String       @id @default(cuid())
+  billNumber    String       @unique
+  customerId    String?
+  customer      Customer?    @relation(fields: [customerId], references: [id])
+  items         BillItem[]
+  returns       Return[]
+  subtotal      Float
+  discountAmt   Float        @default(0)
+  discountPct   Float        @default(0)
+  gstAmount     Float
+  totalAmount   Float
+  amountPaid    Float
+  changeAmount  Float        @default(0)
+  paymentMode   String       @default("CASH")
+  upiRef        String?
+  cardRef       String?
+  status        String       @default("PAID")
+  notes         String?
+  showGst       Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  printedAt     DateTime?
+}
+
+model BillItem {
+  id         String   @id @default(cuid())
+  billId     String
+  bill       Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id])
+  name       String
+  barcode    String
+  size       String?
+  color      String?
+  qty        Int
+  mrp        Float
+  salePrice  Float
+  discount   Float    @default(0)
+  gstRate    Float
+  gstAmount  Float
+  total      Float
+}
+
+model Return {
+  id           String       @id @default(cuid())
+  returnNumber String       @unique
+  billId       String?
+  bill         Bill?        @relation(fields: [billId], references: [id])
+  items        ReturnItem[]
+  reason       String?
+  refundAmount Float
+  refundMode   String       @default("CASH")
+  status       String       @default("COMPLETED")
+  notes        String?
+  createdAt    DateTime     @default(now())
+}
+
+model ReturnItem {
+  id         String   @id @default(cuid())
+  returnId   String
+  return     Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id])
+  name       String
+  barcode    String
+  qty        Int
+  salePrice  Float
+  gstRate    Float
+  gstAmount  Float
+  total      Float
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("cashier")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
